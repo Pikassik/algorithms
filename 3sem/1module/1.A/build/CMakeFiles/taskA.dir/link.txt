@@ -1,1 +1,0 @@
-/usr/bin/c++     CMakeFiles/taskA.dir/main.cpp.o CMakeFiles/taskA.dir/home/user/algorithms-mipt/3sem/1module/StringFunctionsConversions/StringFunctionsConversions.cpp.o  -o taskA 
