@@ -1,3 +1,4 @@
+#pragma once
 #include "StringFunctionsConversions.h"
 
 std::vector<size_t> PrefixFunction(const std::string& line) {
