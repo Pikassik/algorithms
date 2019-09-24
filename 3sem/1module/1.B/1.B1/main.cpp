@@ -7,13 +7,13 @@
 #include <iostream>
 
 int main() {
-  std::vector<size_t> prefix_functions;
+  std::vector<size_t> prefix_function;
   size_t value;
   
   while (std::cin >> value) {
-    prefix_functions.push_back(value);
+    prefix_function.push_back(value);
   }
 
-  std::cout << MinStringFromPrefixFunction(prefix_functions);
+  std::cout << MinStringFromPrefixFunction(prefix_function);
   return 0;
 }
