@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <unordered_set>
 
 std::vector<size_t> PrefixFunction(const std::string& line);
 
