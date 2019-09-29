@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/user/algorithms-mipt/3sem/1module/1.C/main.cpp
+iostream
+-
+memory
+-
+vector
+-
+map
+-
+cstdint
+-
+queue
+-
+unordered_map
+-
+cmath
+-
+
