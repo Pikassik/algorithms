@@ -15,12 +15,12 @@
 #include <map>
 #include <cstdint>
 #include <queue>
-#include <cmath>
+#include <string_view>
 
 class Trie {
  public:
   Trie() = delete;
-  explicit Trie(const std::vector<std::string>& dict);
+  explicit Trie(const std::vector<std::string_view>& dict);
 
   size_t Delta(size_t vertex, char letter);
   static inline bool IsAbcent(int64_t link);
@@ -48,7 +48,7 @@ class Trie {
   std::vector<Node> buffer_;
  private:
   int64_t Up(size_t vertex);
-  void BuildTrie(const std::vector<std::string>& dict);
+  void BuildTrie(const std::vector<std::string_view>& dict);
   void BuildSuffixLinks();
 };
 
@@ -57,7 +57,9 @@ struct SubUsages {
   size_t                dict_size;
 };
 
-std::vector<std::string> ParseToPatterns(const std::string& pattern, std::vector<size_t>& string_indexes);
+std::vector<std::string_view>
+    ParseToPatterns(const std::string& pattern,
+                    std::vector<size_t>& string_indexes);
 
 SubUsages FindSubUsages(const std::string& pattern, const std::string& text);
 
@@ -79,7 +81,7 @@ int main() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Trie::Trie(const std::vector<std::string>& dict)
+Trie::Trie(const std::vector<std::string_view>& dict)
     : buffer_(1, Node(0, root, false, '\0')) {
   BuildTrie(dict);
   BuildSuffixLinks();
@@ -127,7 +129,7 @@ int64_t Trie::Up(size_t vertex) {
   return Up(buffer_[vertex].suffix_link);
 }
 
-void Trie::BuildTrie(const std::vector<std::string>& dict) {
+void Trie::BuildTrie(const std::vector<std::string_view>& dict) {
   for (size_t i = 0; i < dict.size(); ++i) {
 
     size_t current = root;
@@ -182,8 +184,10 @@ void Trie::BuildSuffixLinks() {
   }
 }
 
-std::vector<std::string> ParseToPatterns(const std::string& pattern, std::vector<size_t>& string_indexes) {
-  std::vector<std::string> patterns;
+std::vector<std::string_view>
+    ParseToPatterns(const std::string& pattern,
+                    std::vector<size_t>& string_indexes) {
+  std::vector<std::string_view> patterns;
 
   for (size_t i = 0; i < pattern.size(); ++i) {
 
@@ -194,9 +198,10 @@ std::vector<std::string> ParseToPatterns(const std::string& pattern, std::vector
 
     while (i < pattern.size() && pattern[i] != '?') ++i;
 
-    std::string new_string(pattern.c_str() + string_index, i - string_index);
+    std::string_view new_string(pattern.c_str() + string_index,
+                                i - string_index);
     if (!new_string.empty()) {
-      patterns.push_back(std::move(new_string));
+      patterns.push_back(new_string);
     }
   }
 
@@ -209,7 +214,7 @@ SubUsages FindSubUsages(const std::string& pattern, const std::string& text) {
   }
 
   std::vector<size_t> string_indexes;
-  std::vector<std::string> dict = ParseToPatterns(pattern, string_indexes);
+  std::vector<std::string_view> dict = ParseToPatterns(pattern, string_indexes);
   Trie trie(dict);
   size_t dict_size = dict.size();
   dict.clear();
@@ -228,10 +233,12 @@ SubUsages FindSubUsages(const std::string& pattern, const std::string& text) {
       }
     }
 
-    int64_t current_compressed = trie.buffer_[current_vertex].compressed_suffix_link;
+    int64_t current_compressed =
+        trie.buffer_[current_vertex].compressed_suffix_link;
     while (!Trie::IsAbcent(current_compressed)) {
 
-      for (auto pattern_index: trie.buffer_[current_compressed].pattern_numbers) {
+      for (auto pattern_index:
+           trie.buffer_[current_compressed].pattern_numbers) {
         size_t usage = (i + 1) - trie.buffer_[current_compressed].depth;
         if (usage >= string_indexes[pattern_index] &&
             usage -  string_indexes[pattern_index] < sub_usages.size()) {
@@ -239,7 +246,8 @@ SubUsages FindSubUsages(const std::string& pattern, const std::string& text) {
         }
       }
 
-      current_compressed = trie.buffer_[current_compressed].compressed_suffix_link;
+      current_compressed =
+          trie.buffer_[current_compressed].compressed_suffix_link;
     }
   }
 
