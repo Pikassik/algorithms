@@ -30,12 +30,12 @@ std::vector<size_t> ZFunction(const std::string& line) {
   for (size_t i = 1; i < line.size(); ++i) {
     if (i > right) {
       size_t j = 0;
-      for ( ; line[i + j] == line[j]; ++j);
+      while (line[i + j] == line[j]) ++j;
       z_function[i] = j;
       left = i;
       right = i + j - 1;
     } else if (right < z_function[i - left] + i) {
-      for ( ; line[right] == line[right - i]; ++right);
+      while (line[right] == line[right - i]) ++right;
       z_function[i] = right - i;
     } else {
       z_function[i] = z_function[i - left];
@@ -81,10 +81,10 @@ std::string MinStringFromPrefixFunction(const std::vector<size_t>&
       }
 
       char last_char = 'b';
-      for ( ;
-          last_char != 'z' &&
-          char_set.find(last_char) != char_set.end();
-          ++last_char);
+      while (last_char != 'z' &&
+          	 char_set.find(last_char) != char_set.end()) {
+        ++last_char;
+  	  }
 
       result_string[i] = last_char;
       char_set.clear();
