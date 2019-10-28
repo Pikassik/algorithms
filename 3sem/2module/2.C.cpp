@@ -9,11 +9,11 @@ class SuffixTree {
  public:
   SuffixTree(const std::string& string);
   SuffixTree(std::string&& string);
-  const std::map<char, size_t>& NextVertices(size_t vertex) const;
+  inline const std::map<char, size_t>& NextVertices(size_t vertex) const;
   inline size_t GetLeftBound(size_t vertex) const;
   inline size_t GetRightBound(size_t vertex) const;
-  const std::string& GetString() const;
-  size_t Size() const;
+  inline const std::string& GetString() const;
+  inline size_t Size() const;
 
  private:
   struct Node {
