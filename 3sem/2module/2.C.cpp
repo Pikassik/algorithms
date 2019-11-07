@@ -5,6 +5,11 @@
 #include <algorithm>
 #include <string_view>
 
+#include <iostream>
+#include <map>
+#include <vector>
+#include <iterator>
+
 class SuffixTree {
  public:
   SuffixTree(const std::string& string);
@@ -33,6 +38,8 @@ class SuffixTree {
 
   inline bool IsPath(size_t vertex, size_t string_index);
   inline size_t& Next(size_t vertex, size_t string_index);
+  void UpdateSuffixLink(int64_t& previous_vertex, size_t current_vertex);
+  void GoDown(size_t& current_index, size_t& current_vertex);
   void InsertLeaf(size_t parent);
   void CutEdge(size_t current_vertex, size_t current_index);
   void BuildTree();
@@ -153,6 +160,22 @@ bool SuffixTree::IsPath(size_t vertex, size_t string_index) {
 
 size_t& SuffixTree::Next(size_t vertex, size_t string_index) {
   return buffer_[vertex].next[string_[string_index]];
+}
+
+void SuffixTree::UpdateSuffixLink(int64_t& previous_vertex,
+                                  size_t current_vertex) {
+  if (previous_vertex != -1) {
+    buffer_[previous_vertex].suffix_link = current_vertex;
+    previous_vertex = -1;
+  }
+}
+
+void SuffixTree::GoDown(size_t& current_index, size_t& current_vertex) {
+  size_t old_index = current_index;
+    current_index +=
+      GetRightBound(Next(current_vertex, current_index)) -
+      GetLeftBound(Next(current_vertex, current_index)) + 1;
+    current_vertex = Next(current_vertex, old_index);
 }
 
 void SuffixTree::InsertLeaf(size_t parent) {
