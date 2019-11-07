@@ -31,6 +31,8 @@ class SuffixTree {
 
   inline bool IsPath(size_t vertex, size_t string_index);
   inline size_t& Next(size_t vertex, size_t string_index);
+  void UpdateSuffixLink(int64_t& previous_vertex, size_t current_vertex);
+  void GoDown(size_t& current_index, size_t& current_vertex);
   void InsertLeaf(size_t parent);
   void CutEdge(size_t current_vertex, size_t current_index);
   void BuildTree();
@@ -47,6 +49,10 @@ struct VertexInfo {
   // [left_bound, right_bound]
   size_t left_bound;
   size_t right_bound;
+  VertexInfo(size_t parent,
+             size_t string_number,
+             size_t left_bound,
+             size_t right_bound);
 };
 
 void SuffixTreeDfs(size_t index,
@@ -58,21 +64,17 @@ void SuffixTreeDfs(size_t index,
 ///////////////////////////////////////////////////////////////////////////////
 
 int main() {
-  std::string string;
-  std::cin >> string;
-  size_t first_string_size = string.size();
-  std::copy(std::istream_iterator<char>(std::cin),
-            std::istream_iterator<char>(),
-            std::back_inserter(string));
-
-  auto suffix_tree = SuffixTree(std::move(string));
+  std::string string1, string2;
+  std::cin >> string1 >> string2;
+  size_t first_string_size = string1.size();
+  auto suffix_tree = SuffixTree(string1 + string2);
 
   std::vector<VertexInfo> vertices_info;
   SuffixTreeDfs(0, 0, first_string_size, suffix_tree, vertices_info);
 
   std::cout << vertices_info.size() << std::endl;
   for (size_t i = 1; i < vertices_info.size(); ++i) {
-    std::printf("%lld %lld %lld %lld\n",
+    std::printf("%zu %zu %zu %zu\n",
                 vertices_info[i].parent,
                 vertices_info[i].string_number,
                 (vertices_info[i].string_number == 1 ?
@@ -139,6 +141,22 @@ size_t& SuffixTree::Next(size_t vertex, size_t string_index) {
   return buffer_[vertex].next[string_[string_index]];
 }
 
+void SuffixTree::UpdateSuffixLink(int64_t& previous_vertex,
+                                  size_t current_vertex) {
+  if (previous_vertex != -1) {
+    buffer_[previous_vertex].suffix_link = current_vertex;
+    previous_vertex = -1;
+  }
+}
+
+void SuffixTree::GoDown(size_t& current_index, size_t& current_vertex) {
+  size_t old_index = current_index;
+    current_index +=
+      GetRightBound(Next(current_vertex, current_index)) -
+      GetLeftBound(Next(current_vertex, current_index)) + 1;
+    current_vertex = Next(current_vertex, old_index);
+}
+
 void SuffixTree::InsertLeaf(size_t parent) {
   buffer_[parent].next[string_[leaf_right_bound]] = buffer_.size();
   buffer_.emplace_back(leaf_right_bound, leaf_right_bound, true);
@@ -168,7 +186,6 @@ void SuffixTree::CutEdge(size_t current_vertex, size_t current_index) {
 }
 
 void SuffixTree::BuildTree() {
-
   size_t current_index = 0;
   int64_t previous_vertex = -1;
   size_t current_vertex = 0;
@@ -183,34 +200,22 @@ void SuffixTree::BuildTree() {
              GetRightBound(Next(current_vertex, current_index)) -
              GetLeftBound(Next(current_vertex, current_index)) <
              i - current_index) {
-        size_t old_index = current_index;
-        current_index +=
-          GetRightBound(Next(current_vertex, current_index)) -
-          GetLeftBound(Next(current_vertex, current_index)) + 1;
-        current_vertex = Next(current_vertex, old_index);
+        GoDown(current_index, current_vertex);
       }
 
       if (current_index == i &&
           IsPath(current_vertex, i)) {
-        if (previous_vertex != -1) {
-          buffer_[previous_vertex].suffix_link = current_vertex;
-          previous_vertex = -1;
-        }
+        UpdateSuffixLink(previous_vertex, current_vertex);
       }
 
       if (current_index == i &&
           !IsPath(current_vertex, i)) {
-        if (previous_vertex != -1) {
-          buffer_[previous_vertex].suffix_link = current_vertex;
-          previous_vertex = -1;
-        }
-
+        UpdateSuffixLink(previous_vertex, current_vertex);
         if (current_vertex == 0) ++current_index;
         InsertLeaf(current_vertex);
         current_vertex = buffer_[current_vertex].suffix_link;
         continue;
       }
-
 
       if (string_[GetLeftBound(Next(current_vertex, current_index)) +
                   i - current_index] ==
@@ -221,22 +226,24 @@ void SuffixTree::BuildTree() {
       if (string_[GetLeftBound(Next(current_vertex, current_index)) +
                   i - current_index] !=
           string_[i]) {
-
-        if (previous_vertex != -1) {
-          buffer_.at(previous_vertex).suffix_link = buffer_.size();
-          previous_vertex = -1;
-        }
+        UpdateSuffixLink(previous_vertex, current_vertex);
         previous_vertex = buffer_.size();
-
         CutEdge(current_vertex, current_index);
-
         if (current_vertex == 0) ++current_index;
         current_vertex = buffer_[current_vertex].suffix_link;
       }
     }
-
   }
 }
+
+VertexInfo::VertexInfo(size_t parent,
+                       size_t string_number,
+                       size_t left_bound,
+                       size_t right_bound)
+:parent(parent)
+,string_number(string_number)
+,left_bound(left_bound)
+,right_bound(right_bound) {}
 
 void SuffixTreeDfs(size_t index,
                    size_t parent,
@@ -244,13 +251,10 @@ void SuffixTreeDfs(size_t index,
                    const SuffixTree& tree,
                    std::vector<VertexInfo>& res) {
 
-  res.push_back({
-                 parent,
-                 static_cast<size_t>(
-                 tree.GetLeftBound(index) >= first_string_size ? 1 : 0),
-                 tree.GetLeftBound(index),
-                 tree.GetRightBound(index)
-                });
+  res.emplace_back(parent,
+                   tree.GetLeftBound(index) >= first_string_size ? 1 : 0,
+                   tree.GetLeftBound(index),
+                   tree.GetRightBound(index));
 
   if (index != 0 &&
       tree.GetLeftBound(index) <= first_string_size - 1 &&
