@@ -14,6 +14,17 @@ const size_t kCharsCount = UINT8_MAX + 1;
 
 std::vector<size_t> SuffixArray(const std::string& input_string);
 
+void InitSubSuffixArray(const std::string& string,
+                        std::vector<size_t>& sub_suffix_array,
+                        std::vector<size_t>& classes,
+                        size_t& classes_count);
+
+std::vector<size_t>
+BuildSuffixArrayAfterInit(const std::string& string,
+                          std::vector<size_t>& sub_suffix_array,
+                          std::vector<size_t>& classes,
+                          size_t& classes_count);
+
 std::vector<size_t>
 LongestCommonPrefixArray(const std::string& string,
                          const std::vector<size_t>& suffix_array);
@@ -33,20 +44,26 @@ int main() {
 
 std::vector<size_t> SuffixArray(const std::string& input_string) {
   std::string string = input_string + '\0';
+  std::vector<size_t> sub_suffix_array(string.size());
+  std::vector<size_t> classes(string.size());
+  size_t classes_count = 1;
+  InitSubSuffixArray(string, sub_suffix_array, classes, classes_count);
+  return
+    BuildSuffixArrayAfterInit(string, sub_suffix_array, classes, classes_count);
+}
 
+void InitSubSuffixArray(const std::string& string,
+                        std::vector<size_t>& sub_suffix_array,
+                        std::vector<size_t>& classes,
+                        size_t& classes_count) {
   std::vector<size_t> char_count(kCharsCount, 0);
-
   for (size_t i = 0; i < string.size(); ++i) {
     ++char_count[string[i]];
   }
 
-
   for (size_t i = 0; i < kCharsCount - 1; ++i) {
     char_count[i + 1] += char_count[i];
   }
-
-  std::vector<size_t> sub_suffix_array(string.size());
-
 
   for (size_t i = 0; i < string.size(); ++i) {
     --char_count[string[i]];
@@ -54,8 +71,7 @@ std::vector<size_t> SuffixArray(const std::string& input_string) {
   }
   char_count.clear();
 
-  std::vector<size_t> classes(string.size());
-  size_t classes_count = 1;
+  classes_count = 1;
   classes[0] = 0;
   for (size_t i = 0; i < string.size() - 1; ++i) {
     if (string[sub_suffix_array[i + 1]] !=
@@ -64,24 +80,30 @@ std::vector<size_t> SuffixArray(const std::string& input_string) {
     }
     classes[sub_suffix_array[i + 1]] = classes_count - 1;
   }
+}
 
-  auto power_of_two = [](size_t power) -> size_t {
+std::vector<size_t>
+BuildSuffixArrayAfterInit(const std::string& string,
+                          std::vector<size_t>& sub_suffix_array,
+                          std::vector<size_t>& classes,
+                          size_t& classes_count) {
+  auto power_of_two = [](size_t power) {
     return static_cast<size_t>(1) << power;
   };
 
   std::vector<size_t> classes_counter(string.size());
-
   std::vector<size_t> new_sub_suffix_array(string.size());
   std::vector<size_t> new_classes(string.size());
 
-  for (size_t k = 0; power_of_two(k) < string.size(); ++k) {
+  for (size_t k = 0, k_to_power_of_two = power_of_two(k);
+       k_to_power_of_two < string.size();
+       ++k, k_to_power_of_two = power_of_two(k)) {
     for (size_t i = 0; i < string.size(); ++i) {
       new_sub_suffix_array[i] =
-        sub_suffix_array[i] >= power_of_two(k) ?
-        sub_suffix_array[i] - power_of_two(k)  :
-        (string.size() - power_of_two(k)) + sub_suffix_array[i];
+        sub_suffix_array[i] >= k_to_power_of_two ?
+        sub_suffix_array[i] - k_to_power_of_two  :
+        (string.size() - k_to_power_of_two) + sub_suffix_array[i];
     }
-
 
     std::fill(classes_counter.begin(),
               classes_counter.begin() + classes_count, 0);
@@ -106,8 +128,8 @@ std::vector<size_t> SuffixArray(const std::string& input_string) {
       if (
           (classes[sub_suffix_array[i]] !=
            classes[sub_suffix_array[i + 1]]) ||
-          (classes[(sub_suffix_array[i] + power_of_two(k)) % string.size()] !=
-           classes[(sub_suffix_array[i + 1] + power_of_two(k)) % string.size()])
+          (classes[(sub_suffix_array[i] + k_to_power_of_two) % string.size()] !=
+           classes[(sub_suffix_array[i + 1] + k_to_power_of_two) % string.size()])
          ) {
         ++classes_count;
       }
@@ -117,12 +139,11 @@ std::vector<size_t> SuffixArray(const std::string& input_string) {
     std::swap(classes, new_classes);
   }
 
-  for (size_t i = 0; i < sub_suffix_array.size() - 1; ++i) {
-    sub_suffix_array[i] = sub_suffix_array[i + 1];
-  }
+  std::rotate(sub_suffix_array.begin(),
+              sub_suffix_array.begin() + 1,
+              sub_suffix_array.end());
   sub_suffix_array.pop_back();
-
-  return sub_suffix_array;
+  return std::move(sub_suffix_array);
 }
 
 std::vector<size_t>
