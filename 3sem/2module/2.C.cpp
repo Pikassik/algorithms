@@ -207,7 +207,6 @@ void SuffixTree::CutEdge(size_t current_vertex, size_t current_index) {
 }
 
 void SuffixTree::BuildTree() {
-
   size_t current_index = 0;
   int64_t previous_vertex = -1;
   size_t current_vertex = 0;
@@ -222,34 +221,22 @@ void SuffixTree::BuildTree() {
              GetRightBound(Next(current_vertex, current_index)) -
              GetLeftBound(Next(current_vertex, current_index)) <
              i - current_index) {
-        size_t old_index = current_index;
-        current_index +=
-          GetRightBound(Next(current_vertex, current_index)) -
-          GetLeftBound(Next(current_vertex, current_index)) + 1;
-        current_vertex = Next(current_vertex, old_index);
+        GoDown(current_index, current_vertex);
       }
 
       if (current_index == i &&
           IsPath(current_vertex, i)) {
-        if (previous_vertex != -1) {
-          buffer_[previous_vertex].suffix_link = current_vertex;
-          previous_vertex = -1;
-        }
+        UpdateSuffixLink(previous_vertex, current_vertex);
       }
 
       if (current_index == i &&
           !IsPath(current_vertex, i)) {
-        if (previous_vertex != -1) {
-          buffer_[previous_vertex].suffix_link = current_vertex;
-          previous_vertex = -1;
-        }
-
+        UpdateSuffixLink(previous_vertex, current_vertex);
         if (current_vertex == 0) ++current_index;
         InsertLeaf(current_vertex);
         current_vertex = buffer_[current_vertex].suffix_link;
         continue;
       }
-
 
       if (string_[GetLeftBound(Next(current_vertex, current_index)) +
                   i - current_index] ==
@@ -260,20 +247,13 @@ void SuffixTree::BuildTree() {
       if (string_[GetLeftBound(Next(current_vertex, current_index)) +
                   i - current_index] !=
           string_[i]) {
-
-        if (previous_vertex != -1) {
-          buffer_.at(previous_vertex).suffix_link = buffer_.size();
-          previous_vertex = -1;
-        }
+        UpdateSuffixLink(previous_vertex, current_vertex);
         previous_vertex = buffer_.size();
-
         CutEdge(current_vertex, current_index);
-
         if (current_vertex == 0) ++current_index;
         current_vertex = buffer_[current_vertex].suffix_link;
       }
     }
-
   }
 }
 
