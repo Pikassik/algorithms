@@ -12,31 +12,31 @@
 #include <stack>
 
 
-struct Dot {
+struct Point {
   std::array<double, 3> array;
-  Dot() = default;
-  Dot(const Dot&) = default;
-  Dot& operator=(const Dot&) = default;
-  bool operator==(const Dot& other) const;
+  Point() = default;
+  Point(const Point&) = default;
+  Point& operator=(const Point&) = default;
+  bool operator==(const Point& other) const;
   const double& operator[](size_t i) const;
   double& operator[](size_t i);
-  explicit Dot(double x, double y, double z);
-  Dot operator-() const;
-  Dot operator+(const Dot& other) const;
-  Dot operator-(const Dot& other) const;
-  Dot operator*(double x) const;
+  explicit Point(double x, double y, double z);
+  Point operator-() const;
+  Point operator+(const Point& other) const;
+  Point operator-(const Point& other) const;
+  Point operator*(double x) const;
 
-  static double Distance(const Dot& first, const Dot& second);
-  static double  Length(const Dot& dot);
-  static double DotProduct(const Dot& first, const Dot& second);
-  static double Angle(const Dot& first, const Dot& second);
-  static Dot CrossProduct(const Dot& first, const Dot& second);
-  static double Cos(const Dot& first, const Dot& second);
+  static double Distance(const Point& first, const Point& second);
+  static double  Length(const Point& dot);
+  static double PointProduct(const Point& first, const Point& second);
+  static double Angle(const Point& first, const Point& second);
+  static Point CrossProduct(const Point& first, const Point& second);
+  static double Cos(const Point& first, const Point& second);
 };
 
-Dot NormalVector(const Dot& first_dot,
-                 const Dot& second_dot,
-                 const Dot& third_dot);
+Point NormalVector(const Point& first_dot,
+                 const Point& second_dot,
+                 const Point& third_dot);
 
 struct Segment {
   size_t begin;
@@ -50,22 +50,22 @@ Segment OrderedSegment(size_t begin, size_t end);
 
 class LowerSegmentCmp {
  public:
-  explicit LowerSegmentCmp(const Dot& lowest_dot);
-  bool operator()(const Dot& lhvalue,
-                  const Dot& rhvalue) const;
+  explicit LowerSegmentCmp(const Point& lowest_dot);
+  bool operator()(const Point& lhvalue,
+                  const Point& rhvalue) const;
  private:
-  Dot lowest_dot_;
+  Point lowest_dot_;
 };
 
 class LowerFaceCmp {
  public:
-  explicit LowerFaceCmp(const Dot& first_dot,
-                        const Dot& second_dot);
-  bool operator()(const Dot& lhvalue,
-                  const Dot& rhvalue) const;
+  explicit LowerFaceCmp(const Point& first_dot,
+                        const Point& second_dot);
+  bool operator()(const Point& lhvalue,
+                  const Point& rhvalue) const;
  private:
-  Dot first_dot_;
-  Dot second_dot_;
+  Point first_dot_;
+  Point second_dot_;
 };
 
 void InitBeforeHullBuilding(const std::vector<std::array<size_t, 3>>& faces,
@@ -75,7 +75,7 @@ void InitBeforeHullBuilding(const std::vector<std::array<size_t, 3>>& faces,
 bool IsFreeEdge(const std::map<Segment, size_t>& edges_count,
                 size_t left, size_t right);
 
-double CurrentFacesAngle(const std::vector<Dot>& dots,
+double CurrentFacesAngle(const std::vector<Point>& dots,
                          Segment current_edge,
                          size_t current_point,
                          size_t current_index);
@@ -86,22 +86,22 @@ void UpdateHullBuildingState(std::vector<std::array<size_t, 3>>& faces,
                              Segment current_edge,
                              size_t current_vertex);
 
-void BuildHull(const std::vector<Dot>& dots,
+void BuildHull(const std::vector<Point>& dots,
                std::vector<std::array<size_t, 3>>& faces,
                std::stack<std::pair<Segment, size_t>>& edges_stack,
                std::map<Segment, size_t>& edges_count);
 
-void RotateFaces(const std::vector<Dot>& dots,
+void RotateFaces(const std::vector<Point>& dots,
                  std::vector<std::array<size_t, 3>>& faces);
 
-std::vector<std::array<size_t, 3>> ConvexHull(const std::vector<Dot>& dots);
+std::vector<std::array<size_t, 3>> ConvexHull(const std::vector<Point>& dots);
 
 ///////////////////////////////////////////////////////////////////////////////
 
 int main() {
   size_t tests_count = 0;
   std::cin >> tests_count;
-  std::vector<Dot> dots;
+  std::vector<Point> dots;
   for (size_t i = 0; i < tests_count; ++i) {
     size_t vertices_count = 0;
     std::cin >> vertices_count;
@@ -124,71 +124,71 @@ int main() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool Dot::operator==(const Dot& other) const {
+bool Point::operator==(const Point& other) const {
   return array == other.array;
 }
 
-const double& Dot::operator[](size_t i) const {
+const double& Point::operator[](size_t i) const {
   return  array[i];
 }
 
-double& Dot::operator[](size_t i) {
+double& Point::operator[](size_t i) {
   return  array[i];
 }
 
-Dot::Dot(double x, double y, double z): array{{x, y, z}} {}
+Point::Point(double x, double y, double z): array{{x, y, z}} {}
 
-Dot Dot::operator-() const {
-  return Dot(-array[0], -array[1], -array[2]);
+Point Point::operator-() const {
+  return Point(-array[0], -array[1], -array[2]);
 }
 
-Dot Dot::operator+(const Dot& other) const {
-  return Dot(array[0] + other[0], array[1] + other[1], array[2] + other[2]);
+Point Point::operator+(const Point& other) const {
+  return Point(array[0] + other[0], array[1] + other[1], array[2] + other[2]);
 }
 
-Dot Dot::operator-(const Dot& other) const {
-  return Dot(array[0] - other[0], array[1] - other[1], array[2] - other[2]);
+Point Point::operator-(const Point& other) const {
+  return Point(array[0] - other[0], array[1] - other[1], array[2] - other[2]);
 }
 
-Dot Dot::operator*(double x) const {
-  return Dot(array[0] * x, array[1] * x, array[2] * x);
+Point Point::operator*(double x) const {
+  return Point(array[0] * x, array[1] * x, array[2] * x);
 }
 
-double Dot::Distance(const Dot& first, const Dot& second) {
+double Point::Distance(const Point& first, const Point& second) {
   return std::sqrt((second[0] - first[0]) * (second[0] - first[0]) +
                    (second[1] - first[1]) * (second[1] - first[1]) +
                    (second[2] - first[2]) * (second[2] - first[2]));
 }
 
-double Dot::Length(const Dot& dot) {
-  return Distance(Dot(0, 0, 0), dot);
+double Point::Length(const Point& dot) {
+  return Distance(Point(0, 0, 0), dot);
 }
 
-double Dot::DotProduct(const Dot& first, const Dot& second) {
+double Point::PointProduct(const Point& first, const Point& second) {
   return first[0] * second[0] + first[1] * second[1] + first[2] * second[2];
 }
 
-double Dot::Angle(const Dot& first, const Dot& second) {
+double Point::Angle(const Point& first, const Point& second) {
   return acos(
-    DotProduct(first, second)  / (Length(first) * Length(second))
+    PointProduct(first, second)  / (Length(first) * Length(second))
   );
 }
 
-Dot Dot::CrossProduct(const Dot& first, const Dot& second) {
-  return Dot(first[1] * second[2] - first[2] * second[1],
+Point Point::CrossProduct(const Point& first, const Point& second) {
+  return Point(first[1] * second[2] - first[2] * second[1],
              -(first[0] * second[2] - first[2] * second[0]),
              first[0] * second[1] - first[1] * second[0]
   );
 }
 
-double Dot::Cos(const Dot& first, const Dot& second) {
-  return DotProduct(first, second) / (Length(first) * Length(second));
+double Point::Cos(const Point& first, const Point& second) {
+  return PointProduct(first, second) / (Length(first) * Length(second));
 }
 
-Dot NormalVector(const Dot& first_dot,
-                 const Dot& second_dot,
-                 const Dot& third_dot) {
-  return Dot::CrossProduct(first_dot - second_dot, third_dot - second_dot);
+Point NormalVector(const Point& first_dot,
+                   const Point& second_dot,
+                   const Point& third_dot) {
+  return Point::CrossProduct(first_dot - second_dot, third_dot - second_dot);
 }
 
 bool operator==(const Segment& left, const Segment& right) {
@@ -205,27 +205,27 @@ Segment OrderedSegment(size_t begin, size_t end) {
   return {end, begin};
 }
 
-LowerSegmentCmp::LowerSegmentCmp(const Dot& lowest_dot)
+LowerSegmentCmp::LowerSegmentCmp(const Point& lowest_dot)
 : lowest_dot_(lowest_dot) {}
 
-bool LowerSegmentCmp::operator()(const Dot& lhvalue, const Dot& rhvalue) const {
+bool LowerSegmentCmp::operator()(const Point& lhvalue, const Point& rhvalue) const {
   if (lhvalue == lowest_dot_)
       return true;
 
   if (rhvalue == lowest_dot_)
     return false;
 
-  return Dot::Angle(lhvalue - lowest_dot_, Dot(0, 0, 1)) <
-         Dot::Angle(rhvalue - lowest_dot_, Dot(0, 0, 1));
+  return Point::Angle(lhvalue - lowest_dot_, Point(0, 0, 1)) <
+         Point::Angle(rhvalue - lowest_dot_, Point(0, 0, 1));
 }
 
-LowerFaceCmp::LowerFaceCmp(const Dot& first_dot, const Dot& second_dot)
+LowerFaceCmp::LowerFaceCmp(const Point& first_dot, const Point& second_dot)
 : first_dot_(first_dot)
 , second_dot_(second_dot) {}
 
-bool LowerFaceCmp::operator()(const Dot& lhvalue, const Dot& rhvalue) const {
-  auto normalized_applicate = [](const Dot& dot) -> double {
-    return std::abs(dot[2]) / Dot::Length(dot);
+bool LowerFaceCmp::operator()(const Point& lhvalue, const Point& rhvalue) const {
+  auto normalized_applicate = [](const Point& dot) -> double {
+    return std::abs(dot[2]) / Point::Length(dot);
   };
 
   if (lhvalue == first_dot_ ||
@@ -236,8 +236,8 @@ bool LowerFaceCmp::operator()(const Dot& lhvalue, const Dot& rhvalue) const {
         rhvalue == second_dot_)
       return false;
 
-    Dot left_normal_vector = NormalVector(first_dot_, second_dot_, lhvalue);
-    Dot right_normal_vector = NormalVector(first_dot_, second_dot_, rhvalue);
+    Point left_normal_vector = NormalVector(first_dot_, second_dot_, lhvalue);
+    Point right_normal_vector = NormalVector(first_dot_, second_dot_, rhvalue);
 
     return  normalized_applicate(left_normal_vector) <
             normalized_applicate(right_normal_vector);
@@ -266,33 +266,33 @@ bool IsFreeEdge(const std::map<Segment, size_t>& edges_count,
   return (*it).second < 2;
 }
 
-double CurrentFacesAngle(const std::vector<Dot>& dots,
-                       Segment current_edge,
-                       size_t current_point,
-                       size_t current_index) {
-  Dot first_middle = (dots[current_edge.begin] +
+double CurrentFacesAngle(const std::vector<Point>& dots,
+                         Segment current_edge,
+                         size_t current_point,
+                         size_t current_index) {
+  Point first_middle = (dots[current_edge.begin] +
                       dots[current_edge.end] +
                       dots[current_index]) * (1./3);
-      Dot second_middle = (dots[current_edge.begin] +
+      Point second_middle = (dots[current_edge.begin] +
                            dots[current_edge.end] +
                            dots[current_point]) * (1./3);
 
       std::array<size_t, 3> new_face =
         {current_edge.begin, current_edge.end, current_index};
-      Dot first_normal = NormalVector(dots[current_point],
+      Point first_normal = NormalVector(dots[current_point],
                                       dots[current_edge.begin],
                                       dots[current_edge.end]);
 
-      if (Dot::Cos(first_normal, first_middle - second_middle) < -0)
+      if (Point::Cos(first_normal, first_middle - second_middle) < -0)
         first_normal = -first_normal;
 
-      Dot second_normal = NormalVector(dots[new_face[0]],
+      Point second_normal = NormalVector(dots[new_face[0]],
                                        dots[new_face[1]],
                                        dots[new_face[2]]);
-      if (Dot::Cos(second_normal, second_middle - first_middle) < -0)
+      if (Point::Cos(second_normal, second_middle - first_middle) < -0)
         second_normal = -second_normal;
 
-  return std::acos(-Dot::Cos(first_normal, second_normal));
+  return std::acos(-Point::Cos(first_normal, second_normal));
 }
 
 void UpdateHullBuildingState(std::vector<std::array<size_t, 3>>& faces,
@@ -312,7 +312,7 @@ void UpdateHullBuildingState(std::vector<std::array<size_t, 3>>& faces,
                       current_edge.end);
 }
 
-void BuildHull(const std::vector<Dot>& dots,
+void BuildHull(const std::vector<Point>& dots,
                std::vector<std::array<size_t, 3>>& faces,
                std::stack<std::pair<Segment, size_t>>& edges_stack,
                std::map<Segment, size_t>& edges_count) {
@@ -352,21 +352,21 @@ void BuildHull(const std::vector<Dot>& dots,
   }
 }
 
-void RotateFaces(const std::vector<Dot>& dots,
+void RotateFaces(const std::vector<Point>& dots,
                  std::vector<std::array<size_t, 3>>& faces) {
   for (size_t i = 0; i < faces.size(); ++i) {
     std::sort(faces[i].begin(), faces[i].end());
-    Dot first_middle =
+    Point first_middle =
       (dots[faces[i][0]] +
        dots[faces[i][1]] +
        dots[faces[i][2]]) * (1./3);
-    Dot second_middle =
+    Point second_middle =
       (dots[faces[(i + 1) % faces.size()][0]] +
        dots[faces[(i + 1) % faces.size()][1]] +
        dots[faces[(i + 1) % faces.size()][2]]) * (1./3);
 
-    if (Dot::Cos(second_middle - first_middle,
-                 Dot::CrossProduct(
+    if (Point::Cos(second_middle - first_middle,
+                 Point::CrossProduct(
                    dots[faces[i][1]] - dots[faces[i][0]],
                    dots[faces[i][2]] - dots[faces[i][0]])) < -0) {
       std::swap(faces[i][1], faces[i][2]);
@@ -375,11 +375,11 @@ void RotateFaces(const std::vector<Dot>& dots,
   }
 }
 
-std::vector<std::array<size_t, 3>> ConvexHull(const std::vector<Dot>& dots) {
+std::vector<std::array<size_t, 3>> ConvexHull(const std::vector<Point>& dots) {
   Segment first_segment;
   first_segment.begin = std::distance(dots.begin(),
     std::min_element(dots.begin(), dots.end(),
-                     [&dots](const Dot& lhvalue, const Dot& rhvalue) {
+                     [&dots](const Point& lhvalue, const Point& rhvalue) {
     return std::tie(lhvalue[2], lhvalue[1], lhvalue[0]) <
            std::tie(rhvalue[2], rhvalue[1], rhvalue[0]);
   }));

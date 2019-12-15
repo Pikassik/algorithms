@@ -65,6 +65,13 @@ double TernaryMinSearch(double left_bound,
   return left_bound + (right_bound - left_bound) / 2;
 }
 
+
+/*!
+ * @brief calculates distance between points
+ 	first.begin + (first.end - first.begin) * first_parameter
+ 	and
+ 	second.begin + (second.end - first.end) * second_parameter
+ */
 template <size_t n>
 double ParameterizedDistance(const Segment<n>& first,
                              const Segment<n>& second,
