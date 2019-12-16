@@ -37,8 +37,7 @@
 #include <string>
 
 
-constexpr size_t kBase = 10;
-constexpr size_t kMulConstant = 128;
+constexpr size_t kMulConstant = 8;
 
 
 class BigInteger final {
@@ -88,6 +87,7 @@ private:
                            const BigInteger& rhvalue);
   static int UnsignedCompare(const BigInteger& lhvalue,
                              const BigInteger& rhvalue);
+  constexpr size_t kBase = 10;
   std::vector<uint8_t> number_;
 };
 
@@ -192,6 +192,14 @@ BigInteger& BigInteger::operator*=(const BigInteger& other) {
   return *this;
 }
 
+
+/*
+ * цикл (1) выполнится не более n = max(len(left), len(right)) раз
+ * цикл (2) выполнится не более kBase = const раз,
+ * внутри операции выполняются за O(n)
+ * операции (3) занимают O(n) времени
+ * Итоговое время работы n * (const * O(n) + O(n)) = O(n^2)
+ */
 BigInteger& BigInteger::operator/=(const BigInteger& other) {
   if (other == 0)
     throw std::logic_error("division by zero");
@@ -208,13 +216,16 @@ BigInteger& BigInteger::operator/=(const BigInteger& other) {
 
   current_shifted_one.Shift(this->number_.size() - other.number_.size());
   BigInteger answer = 0;
+  /* (1) */
   for (int64_t i = this_copy.number_.size() - other.number_.size();
        i >= 0 ;
        --i) {
+    /* (2) */
     while (UnsignedCompare(this_copy, other_copy) >= 0) {
       this_copy.UnsignedSubtract(other_copy);
       answer.UnsignedAdd(current_shifted_one);
     }
+    /* (3) */
     current_shifted_one.Shift(-1);
     other_copy.Shift(-1);
   }
