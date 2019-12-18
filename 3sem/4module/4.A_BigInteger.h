@@ -37,7 +37,7 @@
 #include <string>
 
 
-constexpr size_t kMulConstant = 8;
+
 
 
 class BigInteger final {
@@ -87,7 +87,8 @@ private:
                            const BigInteger& rhvalue);
   static int UnsignedCompare(const BigInteger& lhvalue,
                              const BigInteger& rhvalue);
-  constexpr size_t kBase = 10;
+  static const size_t kMulConstant = 8;
+  static const size_t kBase = 10;
   std::vector<uint8_t> number_;
 };
 
